@@ -269,7 +269,71 @@ private:
 
         return *iter;
     }
-    
+
+    // A Function to convert infix expression to postfix expression
+    std::string CreateRPN(std::string s) {
+
+        std::stack<char> st; //For stack operations, we are using C++ built in stack
+        std::string ans = "";
+
+        s.erase(remove(s.begin(), s.end(), ' '), s.end());
+        s = RemoveSqrt(s); // SQRT()
+        s = RemoveSqr(s);
+        s = std::regex_replace(s, std::regex("--"), "+");
+
+        if (IsEncapsulated(s)) {
+            s = s.substr(1, s.length() - 2);
+        }
+
+        for (auto& ch : s) {
+
+            // If the current character is an operand, add it to our answer string.
+            if (isdigit(ch) || (ch == '.') || !isdigit(*(&ch - 1)) && ch == '-' && isdigit(*(&ch + 1)))
+                ans += ch;   // Append the current character of string in our answer
+
+                // If the current character of string is an '(', push it to the stack.
+            else if (ch == '(')
+                st.push('(');
+
+                // If the current character of string is an ')', append the top character of stack in our answer string
+                // and pop that top character from the stack until an '(' is encountered.
+            else if (ch == ')') {
+                ans += ' ';
+                while (st.top() != '(')
+                {
+                    if (ans[ans.length() - 1] == ' ')
+                        ans += st.top();
+                    else {
+                        ans += ' ';
+                        ans += {st.top(), ' '};
+                    }
+                        // Append the top character of stack in our answer
+                    st.pop();
+                }
+                st.pop();
+            }
+
+                //If an operator is scanned
+            else {
+                ans += ' ';
+                while (!st.empty() && FindOperator(ch).Precedence <= FindOperator(st.top()).Precedence) {
+                    ans += {st.top(), ' '};
+                    st.pop();
+                }
+                st.push(ch);             // Push the current character of string in stack
+            }
+        }
+
+        // Pop all the remaining elements from the stack
+        while (!st.empty()) {
+            ans += ' ';
+            ans += {st.top(), ' '};
+            st.pop();
+        }
+
+        return ans;
+    }
+    /*
     std::string CreateRPN(std::string Exp) {
         int Depth = 0;
         std::string Result;
@@ -347,7 +411,7 @@ private:
 
         return Result;
     }
-    
+    */
     [[nodiscard]] auto GetDecFormat() const {
         return std::string(MaxDecimals, '#');
     }
@@ -360,7 +424,8 @@ private:
         const std::string cOperators = "^+-*/";
 
         while (std::getline(iss, token, ' ')) {
-            rpnList.push_back(token);
+            if (!token.empty())
+                rpnList.push_back(token);
         }
 
         stack.push(std::stod(rpnList[0]));
