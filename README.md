@@ -1,7 +1,4 @@
 # RPNMathLib
-
----
-
 Simple, RPN-based C++ math expression evaluation library.
 
 ## Building
