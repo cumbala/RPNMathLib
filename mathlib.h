@@ -185,7 +185,6 @@ private:
             ||  (expr[_pos] == '.')
             ||  (
                     !isdigit(expr[_pos - 1])
-                &&  expr[_pos - 1] != '('
                 &&  expr[_pos - 1] != ')'
                 &&  expr[_pos] == '-'
                 &&  isdigit(expr[_pos + 1])
