@@ -1,129 +1,13 @@
 ﻿//
-// Created by lunam on 3/1/2023.
+// Created by cumbala on 3/1/2023.
 //
 
 #include <cmath>
 #include <string>
 #include <algorithm>
 
-//const std::string WHITESPACE = " \n\r\t\f\v";
-//
-//std::string ltrim(const std::string &s) {
-//    size_t start = s.find_first_not_of(WHITESPACE);
-//    return (start == std::string::npos) ? "" : s.substr(start);
-//}
-//
-//std::string rtrim(const std::string &s) {
-//    size_t end = s.find_last_not_of(WHITESPACE);
-//    return (end == std::string::npos) ? "" : s.substr(0, end + 1);
-//}
-//
-//std::string trim(const std::string &s) {
-//    return rtrim(ltrim(s));
-//}
-
 #ifndef PSMATHLIB_MATHLIB_H
 #define PSMATHLIB_MATHLIB_H
-
-//class MathExpressionParser {
-//public:
-//    explicit MathExpressionParser(const std::string& input): m_input(trim(input)), m_index(0) {}
-//
-//    double parse(const std::string &input) {
-//        m_input = trim(input);
-//        m_index = 0;
-//        return expression();
-//    }
-//
-//    double parse() {
-//        return expression();
-//    }
-//
-//private:
-//    double expression() {
-//        double result = term();
-//        while (peek() == '+' || peek() == '-') {
-//            char op = consume();
-//            double operand = term();
-//            if (op == '+') {
-//                result += operand;
-//            } else {
-//                result -= operand;
-//            }
-//        }
-//        return result;
-//    }
-//
-//    double term() {
-//        double result = factor();
-//        while (peek() == '*' || peek() == '/') {
-//            char op = consume();
-//            double operand = factor();
-//            if (op == '*') {
-//                result *= operand;
-//            } else {
-//                result /= operand;
-//            }
-//        }
-//        return result;
-//    }
-//
-//    double factor() {
-//        if (peek() == '(') {
-//            consume();  // Consume the '('
-//            double result = expression();
-//            consume();  // Consume the ')'
-//            return result;
-//        } else if (peek() == '-') {
-//            consume();  // Consume the '-'
-//            return -factor();
-//        } else if (peek() == 's') {
-//            return sqrt_func();
-//        } else {
-//            return number();
-//        }
-//    }
-//
-//    double number() {
-//        double result = parse_number();
-//        if (peek() == '^') {
-//            consume();  // Consume the '^'
-//            double exponent = parse_number();
-//            result = pow(result, exponent);
-//        }
-//        return result;
-//    }
-//
-//    double sqrt_func() {
-//        consume();  // Consume the 's'
-//        consume();  // Consume the 'q'
-//        consume();  // Consume the 'r'
-//        consume();  // Consume the 't'
-//        consume();  // Consume the '('
-//        double result = expression();
-//        consume();  // Consume the ')'
-//        return sqrt(result);
-//    }
-//
-//    char peek() {
-//        return m_input[m_index];
-//    }
-//
-//    char consume() {
-//        return m_input[m_index++];
-//    }
-//
-//    double parse_number() {
-//        double result = 0;
-//        while (isdigit(peek())) {
-//            result = result * 10 + (consume() - '0');
-//        }
-//        return result;
-//    }
-//
-//    std::string m_input;
-//    int m_index;
-//};
 
 #include <iostream>
 #include <stack>
@@ -133,8 +17,6 @@
 #include <utility>
 #include <iomanip>
 #include <sstream>
-
-#define FLOAT_TO_STRING(VAL, P) std::to_string(VAL).substr(0, std::to_string(VAL).find('.') + P + 1)
 
 enum TAssociativity {
     None, Left, Right
@@ -178,240 +60,196 @@ const std::vector<TOperator> Operators = {
 
 class TExpressionParser {
 private:
-    std::string RemoveSqrt(std::string S, int os = 1) {
-        std::transform(S.begin(), S.end(), S.begin(), ::toupper);
 
-        // Find all SQRT() substrings using regex /SQRT\((.*?)\)/gm
-        // does not work if recursive sqrt(sqrt()) is used
-        std::regex self_regex("SQRT\\((.*?)\\)", std::regex_constants::ECMAScript | std::regex_constants::icase);
-        std::smatch matches;
+//    int CheckDepth(const std::string& S) {
+//        std::stack<char> st;
+//        for (auto& c : S) {
+//
+//        }
+//        return 0;
+//    }
+//
+//    bool IsEncapsulated(const std::string& S) {
+//        if (S[0] == '(' && S[S.length() - 1] == ')') {
+//            // remove brackets to temp variable
+//            std::string temp = S.substr(1, S.length() - 2);
+//            // check if temp is encapsulated
+//            return CheckDepth(temp) == 0;
+//        }
+//
+//        return false;
+//    }
 
-        while (std::regex_search(S, matches, self_regex)) {
-            std::string match = matches[0].str();  // Get entire match
-            std::string num_str = matches[1].str();  // Get number inside brackets
-            double result = std::sqrt(ParseExpressionToFloat(num_str));  // Calculate square root
-            std::string result_str = std::to_string(result);  // Convert result to string
-            S.replace(matches.position(), match.length(), result_str);  // Replace match with result
+//    static TOperator FindOperator(char Ch) {
+//        auto iter = std::find_if(Operators.begin(), Operators.end(), [Ch](const auto& op) {
+//            return op.iOperator == Ch;
+//        });
+//
+//        if (iter == Operators.end()) {
+//            return nullptr;
+//        }
+//
+//        return *iter;
+//    }
+    bool isOperator(std::string c) {
+        return c == "+" || c == "-" || c == "*" || c == "/" || c == "^";
+    }
+
+    bool isOperator(char c) {
+        return isOperator(std::string(1, c));
+    }
+
+    bool leftAssoc(std::string c) {
+        return c != "^";
+    }
+
+    bool leftAssoc(char c) {
+        return leftAssoc(std::string(1, c));
+    }
+
+    int priority(char c) {
+        switch (c) {
+            case '^': return 3;
+            case '*':
+            case '/': return 2;
+            case '+':
+            case '-': return 1;
+            default: return 0;
+        }
+    }
+
+    int priority(std::string c) {
+        return priority(c[0]);
+    }
+
+    int rightPriority(char c) {
+        switch (c) {
+            case '+': return 1;
+            case '-': return 2;
+            case '*': return 3;
+            case '/': return 4;
+            case '^': return 5;
+            default: return 0;
+        }
+    }
+
+    /// Recursive function to replace sqrt() with
+    /// it's power representation\n
+    /// sqrt(12) -> 12^(1/2)\n
+    /// sqrt(12 + 3) -> (12 + 3)^(1/2)\n
+    std::string ReplaceSqrt(std::string s) {
+        std::string res;
+        size_t pos = s.find("sqrt(");
+        int Depth = 0;
+        if (pos != std::string::npos) {
+            pos += 5;
+            for (size_t i = pos; i < s.length(); i++) {
+                if (s[i] == ')' && Depth == 0) {
+                    break;
+                }
+
+                if (s[i] == '(') Depth++;
+                if (s[i] == ')') Depth--;
+
+                res += s[i];
+            }
+
+            s = s.replace(pos - 5, res.length() + 6, "(" + res + ")^(1/2)");
+
+            if (s.find("sqrt(") != std::string::npos) {
+                s = ReplaceSqrt(s);
+            }
+
+            return s;
         }
 
-        // find first SQRT( substring
-        //int start = S.find("SQRT(", os - 1);
-        
-
-        return S;
-
+        return s;
     }
     
-    std::string RemoveSqr(std::string S, int os = 1) {
-        std::size_t I, J, ob, cb;
-        int Depth;
-        std::string num, sSqr;
-        std::transform(S.begin(), S.end(), S.begin(), ::toupper);
-        I = S.find("SQR", os - 1);
-        if (I + 1 > S.length() || I == std::string::npos) {
-            return S;
-        }
-        Depth = 1;
-        ob = S.find('(', I);
-        J = ob;
-        do {
-            J++;
-            if (S[J] == '(') {
-                Depth++;
-            } else if (S[J] == ')') {
-                Depth--;
-            }
-        } while (Depth != 0);
-        cb = J;
-        num = S.substr(ob + 1, cb - ob - 1);
-        for (auto& C : num) {
-            if (scOperators.find(C) != std::string::npos) {
-                num = ParseExpressionToString(num); // function ParseExpressionToString needs to be implemented
-                break;
-            }
-        }
-        sSqr = "SQR(" + num + ")";
-        S = std::regex_replace(S, std::regex(sSqr), std::to_string(std::pow(std::stoi(num), 2)));
-        return RemoveSqr(S, I + 1);
+    int _pos = 0;
+    std::string nextToken(std::string &expr) {
+        while (_pos < expr.length() && expr[_pos] == ' ')
+            _pos++;
+
+        if (_pos == expr.length())
+            return "";
+
+        std::string b;
+
+        while (
+                _pos < expr.length()
+            &&  expr[_pos] == ' '
+            &&  expr[_pos] != '('
+            &&  expr[_pos] != ')'
+            ||  isdigit(expr[_pos])
+            ||  (expr[_pos] == '.')
+            ||  (
+                    !isdigit(expr[_pos - 1])
+                &&  expr[_pos - 1] != '('
+                &&  expr[_pos - 1] != ')'
+                &&  expr[_pos] == '-'
+                &&  isdigit(expr[_pos + 1])
+            )
+        )
+            b += expr[_pos++];
+
+        if (!b.empty())
+            return b;
+
+        return { expr[_pos++] };
     }
 
-    int CheckDepth(const std::string& S) {
-        int Depth = 0;
-        for (auto& C : S) {
-            if (C == '(') {
-                Depth++;
-            } else if (C == ')') {
-                Depth--;
-            }
-        }
-        return Depth;
-    }
+    std::string CreateRPN(std::string input) {
+        std::vector<std::string> S, O;
+        std::string tok;
 
-    bool IsEncapsulated(const std::string& S) {
-        if (S[0] == '(' && S[S.length() - 1] == ')') {
-            // remove brackets to temp variable
-            std::string temp = S.substr(1, S.length() - 2);
-            // check if temp is encapsulated
-            return CheckDepth(temp) == 0;
-        }
+        input.erase(remove(input.begin(), input.end(), ' '), input.end());
+        input = ReplaceSqrt(input);
+        input = std::regex_replace(input, std::regex("--"), "+");
 
-        return false;
-    }
-
-    static TOperator FindOperator(char Ch) {
-        auto iter = std::find_if(Operators.begin(), Operators.end(), [Ch](const auto& op) {
-            return op.iOperator == Ch;
-        });
-
-        if (iter == Operators.end()) {
-            throw std::invalid_argument("Invalid operator!");
-        }
-
-        return *iter;
-    }
-
-    // A Function to convert infix expression to postfix expression
-    std::string CreateRPN(std::string s) {
-
-        std::stack<char> st; //For stack operations, we are using C++ built in stack
-        std::string ans = "";
-
-        s.erase(remove(s.begin(), s.end(), ' '), s.end());
-        s = RemoveSqrt(s); // SQRT()
-        s = RemoveSqr(s);
-        s = std::regex_replace(s, std::regex("--"), "+");
-
-        if (IsEncapsulated(s)) {
-            s = s.substr(1, s.length() - 2);
-        }
-
-        for (auto& ch : s) {
-
-            // If the current character is an operand, add it to our answer string.
-            if (isdigit(ch) || (ch == '.') || !isdigit(*(&ch - 1)) && ch == '-' && isdigit(*(&ch + 1)))
-                ans += ch;   // Append the current character of string in our answer
-
-                // If the current character of string is an '(', push it to the stack.
-            else if (ch == '(')
-                st.push('(');
-
-                // If the current character of string is an ')', append the top character of stack in our answer string
-                // and pop that top character from the stack until an '(' is encountered.
-            else if (ch == ')') {
-                ans += ' ';
-                while (st.top() != '(')
-                {
-                    if (ans[ans.length() - 1] == ' ')
-                        ans += st.top();
-                    else {
-                        ans += ' ';
-                        ans += {st.top(), ' '};
-                    }
-                        // Append the top character of stack in our answer
-                    st.pop();
+         while (!(tok = nextToken(input)).empty()) {
+            if (tok == "(")
+                S.push_back(tok);
+            else if (tok == ")") {
+                while (!S.empty() && S[S.size() - 1] != "(") {
+                    O.push_back(S[S.size() - 1]);
+                    S.pop_back();
                 }
-                st.pop();
-            }
-
-                //If an operator is scanned
-            else {
-                ans += ' ';
-                while (!st.empty() && FindOperator(ch).Precedence <= FindOperator(st.top()).Precedence) {
-                    ans += {st.top(), ' '};
-                    st.pop();
+                if (S.empty())
+                    throw std::invalid_argument("Mismatched parentheses");
+                S.pop_back();
+            } else if (isOperator(tok)) {
+                while (!S.empty() && isOperator(S[S.size() - 1])
+                       && ((leftAssoc(tok) && priority(tok) <= priority(S[S.size() - 1]))
+                           || (!leftAssoc(tok) && priority(tok) < priority(S[S.size() - 1])))) {
+                    O.push_back(S[S.size() - 1]);
+                    S.pop_back();
                 }
-                st.push(ch);             // Push the current character of string in stack
-            }
+                S.push_back(tok);
+            } else
+                O.push_back(tok);
         }
 
-        // Pop all the remaining elements from the stack
-        while (!st.empty()) {
-            ans += ' ';
-            ans += {st.top(), ' '};
-            st.pop();
+        while(!S.empty()) {
+            if (!isOperator(S[S.size() - 1]))
+                throw std::invalid_argument("Mismatched parentheses");
+            O.push_back(S[S.size() - 1]);
+            S.pop_back();
         }
 
-        return ans;
+        if (O.empty())
+            throw std::invalid_argument("Invalid expression");
+
+        std::string output;
+
+        for (int j = 0; j < O.size(); j++) {
+            if (j != 0) output += " ";
+            output += O[j];
+        }
+
+        return output;
     }
-    /*
-    std::string CreateRPN(std::string Exp) {
-        int Depth = 0;
-        std::string Result;
-        std::vector<TOperator> opList;
-        std::stack<std::string> numStack;
-        std::string num;
 
-        Exp.erase(std::remove(Exp.begin(), Exp.end(), ' '), Exp.end());
-        Exp = RemoveSqrt(Exp); // SQRT()
-        Exp = RemoveSqr(Exp);
-        Exp = std::regex_replace(Exp, std::regex("--"), "+");
-
-        if (IsEncapsulated(Exp)) {
-            Exp = Exp.substr(1, Exp.length() - 2);
-        }
-
-        for (char &C : Exp) {
-            if (isdigit(C) || (C == '.') || !isdigit(*(&C - 1)) && C == '-' && isdigit(*(&C + 1))) {
-                num += C;
-            } else if (scOperators.find(C) != std::string::npos) {
-                if (!num.empty()) {
-                    Result += num + " ";
-                    num.clear();
-                }
-
-                TOperator currOperator = FindOperator(C);
-                if (currOperator.iOperator == ')') {
-                    Depth--;
-                    Result += {opList[0].iOperator, ' '};
-
-                    opList.erase(opList.begin());
-//                    opList.erase(opList.begin());
-
-
-
-                    opList.erase(std::remove_if(opList.begin(), opList.end(), [](const TOperator &op) {
-                        return op.iOperator == '(' || op.iOperator == ')';
-                    }), opList.end());
-
-                    Result += {opList[0].iOperator, ' '};
-
-                    if (!opList.empty())
-                        opList.erase(opList.begin());
-//
-//                    auto res = std::find(opList.begin(), opList.end(), '(');
-//                    if (res != opList.end())
-//                    opList.erase(opList.begin());
-//                    opList.erase(opList.begin() + opList.size() - 1);
-                } else if (currOperator.iOperator == '(') {
-                    Depth++;
-                    opList.insert(opList.begin(), currOperator);
-                } else if (currOperator.iOperator == '^') {
-                    opList.insert(opList.begin(), currOperator);
-                } else if (!opList.empty()) {
-                    if (opList[0].Precedence >= currOperator.Precedence) {
-                        Result += {opList[0].iOperator, ' '};
-                        opList.erase(opList.begin());
-                        opList.insert(opList.begin(), currOperator);
-                    } else {
-                        opList.insert(opList.begin(), currOperator);
-                    }
-                } else {
-                    opList.push_back(currOperator);
-                }
-            }
-        }
-
-        if (!num.empty()) {
-            Result += num + " ";
-        }
-
-        for (auto op : opList) {
-            Result += {op.iOperator, ' '};
-        }
-
-        return Result;
-    }
-    */
     [[nodiscard]] auto GetDecFormat() const {
         return std::string(MaxDecimals, '#');
     }
@@ -467,9 +305,9 @@ private:
     }
 public:
     // FFormat is ignored, since cpp does not seem to have "TFormatSettings"
-    char DecimalSeparator;
+    char DecimalSeparator{};
     
-    int MaxDecimals;
+    int MaxDecimals = 8;
     
     double ParseExpressionToFloat(std::string Expression) {
         // Reversed polish notation
