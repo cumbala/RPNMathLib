@@ -7,8 +7,10 @@ The project is configured to build a static library and a test executable.
 The library is written in C++20.
 
 ## Usage
-The library is header-only, so you can just include the header file in your project.
+The library is header-only, so you can just include the header file in your project. 
+The input is a string containing a normal mathematical expression. The output is a float value.
 ```cpp
+#include <iostream>
 #include "mathlib.h"
 
 int main() {
